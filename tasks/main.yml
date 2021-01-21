@@ -1,0 +1,27 @@
+---
+# tasks file for shokinn.system.ubuntu.livepatch
+- name: Install snapd
+  become: yes
+  apt:
+    name: "{{ packages }}"
+    force_apt_get: yes
+  vars:
+    packages:
+    - snapd
+
+- name: Install ubunut livepatch
+  become: yes
+  snap:
+    name:
+      - canonical-livepatch
+    state: present
+  register: state_canocial_livepatch
+
+- name: Setup token for ubuntu livepatch
+  become: yes
+  command: "canonical-livepatch enable {{ shokinn_system_ubuntu_livepatch_token }}"
+  when:
+    - shokinn_system_ubuntu_livepatch_token is defined
+    - shokinn_system_ubuntu_livepatch_token != ""
+    - state_canocial_livepatch['changed'] == True
+    - '"canonical-livepatch" in state_canocial_livepatch["snaps_installed"]'
