@@ -17,7 +17,7 @@
     state: present
   register: state_canocial_livepatch
 
-- name: Setup token for ubuntu livepatch
+- name: Setup token for ubuntu livepatch (before ubuntu 22.04)
   become: yes
   command: "canonical-livepatch enable {{ shokinn_system_ubuntu_livepatch_token }}"
   when:
@@ -25,3 +25,14 @@
     - shokinn_system_ubuntu_livepatch_token != ""
     - state_canocial_livepatch['changed'] == True
     - '"canonical-livepatch" in state_canocial_livepatch["snaps_installed"]'
+    - ansible_facts['distribution_version'] < "22.04"
+
+- name: Setup token for ubuntu livepatch (from ubuntu 22.04)
+  become: yes
+  command: "ua attach {{ shokinn_system_ubuntu_livepatch_token }}"
+  when:
+    - shokinn_system_ubuntu_livepatch_token is defined
+    - shokinn_system_ubuntu_livepatch_token != ""
+    - state_canocial_livepatch['changed'] == True
+    - '"canonical-livepatch" in state_canocial_livepatch["snaps_installed"]'
+    - ansible_facts['distribution_version'] >= "22.04"
